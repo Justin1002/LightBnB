@@ -1,15 +1,6 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123',
-  host: 'localhost',
-  database: 'lightbnb'
-});
-
+const db = require('./db/index.js')
 
 /// Users
 
@@ -33,7 +24,7 @@ const getUserWithEmail = function(email) {
   FROM  users
   WHERE email = $1`
   const value = [email || 'null']
-  return pool.query(query, value)
+  return db.query(query, value)
   .then (res => res.rows[0])
   .catch (err => console.error('query error', err.stack));
 }
@@ -49,7 +40,7 @@ const getUserWithId = function(id) {
   FROM users
   WHERE id = $1`
   const value = [id || 'null']
-  return pool.query(query, value) 
+  return db.query(query, value) 
   .then (res => res.rows[0])
   .catch(err => console.error('query error', err.stack));
 }
@@ -70,7 +61,7 @@ const addUser =  function(user) {
   VALUES($1, $2, $3)
   RETURNING *`
   const values = [user.name, user.email, user.password]
-  return pool.query(query,values)
+  return db.query(query,values)
   .then (res => res.rows[0])
   .catch(err => console.error('query error', err.stack));
 }
@@ -95,7 +86,7 @@ const getAllReservations = function(guest_id, limit = 10) {
   ORDER BY reservations.start_date
   LIMIT $2;`
   const values = [guest_id,limit]
-  return pool.query(query,values)
+  return db.query(query,values)
   .then (res => res.rows)
   .catch(err => console.error('query error', err.stack));
 }
@@ -170,7 +161,7 @@ LIMIT $${queryParams.length}`;
 
 console.log(query, queryParams);
 
-return pool.query(query,queryParams)
+return db.query(query,queryParams)
   .then(res => res.rows)
   .catch(err => console.error('query error', err.stack));
 
@@ -192,7 +183,7 @@ const addProperty = function(property) {
   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
   RETURNING *;`
   const values = [property.owner_id,property.title,property.description,property.thumbnail_photo_url, property.cover_photo_url, property.cost_per_night * 100, property.street, property.city, property.province, property.post_code, property.country, property.parking_spaces, property.number_of_bathrooms, property.number_of_bedrooms]
-  return pool.query(query, values)
+  return db.query(query, values)
     .then(res => res.rows[0])
     .catch(err => console.error('query error', err.stack));
 }
