@@ -110,10 +110,70 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function(options, limit = 10) {
- return pool.query(`
- SELECT * FROM properties
- LIMIT $1`, [limit])
- .then(res => res.rows);
+//  return pool.query(`
+//  SELECT * FROM properties
+//  LIMIT $1`, [limit])
+//  .then(res => res.rows);
+const queryParams = [];
+let query = `SELECT properties.*, avg(property_reviews.rating) as average_rating
+FROM properties
+JOIN property_reviews ON properties.id = property_id
+`
+if (options.city) {
+  queryParams.push(`%${options.city}%`);
+  query += `WHERE city LIKE $${queryParams.length}`;
+}
+
+if (options.owner_id) {
+  queryParams.push(`${options.owner_id}`);
+  if (queryParams.length > 1) {
+    query += ` AND owner_id = $${queryParams.length}`;
+  }
+  else {
+  query += `WHERE owner_id = $${queryParams.length}`;
+  }
+}
+
+if (options.minimum_price_per_night) {
+  queryParams.push(Number(options.minimum_price_per_night) * 100);
+
+  if (queryParams.length > 1) {
+    query += ` AND cost_per_night >= $${queryParams.length}`;
+  }
+  else {
+    query += `WHERE cost_per_night >= $${queryParams.length}`;
+  }
+}
+
+if (options.maximum_price_per_night) {
+  queryParams.push(Number(options.maximum_price_per_night) * 100);
+
+  if (queryParams.length > 1) {
+    query += ` AND cost_per_night <= $${queryParams.length}`;
+  }
+  else {
+    query += `WHERE cost_per_night <= $${queryParams.length}`;
+  }
+}
+
+query += ` GROUP BY properties.id`;
+
+if (options.minimum_rating) {
+  queryParams.push(Number(options.minimum_rating));
+  query += ` HAVING AVG(property_reviews.rating) >= $${queryParams.length}`;
+}
+
+queryParams.push(limit);
+query += `
+ORDER BY cost_per_night
+LIMIT $${queryParams.length}`;
+
+console.log(query, queryParams);
+
+return pool.query(query,queryParams)
+  .then(res => res.rows)
+  .catch(err => console.error('query error', err.stack));
+
 }
 exports.getAllProperties = getAllProperties;
 
@@ -124,9 +184,10 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  // const propertyId = Object.keys(properties).length + 1;
+  // property.id = propertyId;
+  // properties[propertyId] = property;
+  // return Promise.resolve(property);
+  
 }
 exports.addProperty = addProperty;
