@@ -10,7 +10,7 @@ $(() => {
     $searchPropertyForm.detach();
     $logInForm.detach();
     $signUpForm.detach();
-
+    $newResoForm.detach();
     switch (item) {
       case 'listings':
         $propertyListings.appendTo($main);
@@ -27,6 +27,9 @@ $(() => {
       case 'signUp':
         $signUpForm.appendTo($main);
         break;
+      case 'makeReso':
+        $newResoForm.appendTo($main);
+        break;
       case 'error': {
         const $error = $(`<p>${arguments[1]}</p>`);
         $error.appendTo('body');
@@ -37,6 +40,7 @@ $(() => {
         
         break;
       }
+
     }
   }
   

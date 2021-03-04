@@ -1,7 +1,7 @@
 $(() => {
   window.propertyListing = {};
-  
-  function createListing(property, isReservation) {
+  let selectedProperty = {};
+  function createListing(property, isReservation, myListing) {
     return `
     <article class="property-listing">
         <section class="property-listing__preview-image">
@@ -14,23 +14,35 @@ $(() => {
             <li>number_of_bathrooms: ${property.number_of_bathrooms}</li>
             <li>parking_spaces: ${property.parking_spaces}</li>
           </ul>
-          ${isReservation ? 
+          ${isReservation && !myListing ? 
             `<p>${moment(property.start_date).format('ll')} - ${moment(property.end_date).format('ll')}</p>` 
             : ``}
           <footer class="property-listing__footer">
             <div class="property-listing__rating">${Math.round(property.average_rating * 100) / 100}/5 stars</div>
             <div class="property-listing__price">$${property.cost_per_night/100.0}/night</div>
-            <div class="make-reservation">
-            <form>
-            <input type ="submit" value ="Make a Reservation">
-            </form>
-            </div>
           </footer>
+          ${isReservation || myListing ? 
+            ``
+            : `<form id='reso'>
+            <button type ="submit" value="${property.id}">Make a reservation</button>
+            </form>`}
         </section>
       </article>
     `
   }
 
+// Pass data in this property listings page to four things
+// 1)
+  
   window.propertyListing.createListing = createListing;
+
+
+    $('body').on('submit','#reso', function(event) {
+      event.preventDefault();
+      const propID = event.target[0].value;
+      
+      views_manager.show('makeReso')
+    })
+  
 
 });
