@@ -40,8 +40,9 @@ $(() => {
     $('body').on('submit','#reso', function(event) {
       event.preventDefault();
       const propID = event.target[0].value;
-      
+      $('body').data('propID',propID)
       views_manager.show('makeReso')
+      console.log($('body').data())
     })
   
 

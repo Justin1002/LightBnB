@@ -79,9 +79,8 @@ const getAllReservations = function(guest_id, limit = 10) {
   const query = `SELECT properties.*, reservations.*, avg(rating) as average_rating
   FROM reservations
   JOIN properties ON reservations.property_id = properties.id
-  JOIN property_reviews ON properties.id = property_reviews.property_id 
+  LEFT JOIN property_reviews ON properties.id = property_reviews.property_id 
   WHERE reservations.guest_id = $1
-  AND reservations.end_date < now()::date
   GROUP BY properties.id, reservations.id
   ORDER BY reservations.start_date
   LIMIT $2;`
@@ -188,3 +187,16 @@ const addProperty = function(property) {
     .catch(err => console.error('query error', err.stack));
 }
 exports.addProperty = addProperty;
+
+const addReservation = function(reservation) {
+  const query = `INSERT INTO reservations(start_date,end_date,property_id,guest_id)
+  VALUES ($1, $2, $3, $4)
+  RETURNING *;`
+  
+  const values = [reservation.start_date, reservation.end_date, reservation.property_id, reservation.guest_id];
+
+  return db.query(query,values)
+    .then(res => res.rows[0])
+    .catch(err => console.error('query error', err.stack));
+};
+exports.addReservation = addReservation;
